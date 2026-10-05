@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>計算機</title>
+<style>
+  :root {
+    --bg: #f1f3f6;
+    --panel: #ffffff;
+    --text: #1d2330;
+    --muted: #7a8296;
+    --key: #eef0f5;
+    --key-hover: #e2e6ee;
+    --op: #dfe8ff;
+    --op-text: #2b5bd7;
+    --accent: #2b5bd7;
+    --accent-text: #ffffff;
+    --danger: #d64545;
+    --shadow: 0 10px 30px rgba(30, 40, 70, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c;
+      --panel: #1b202b;
+      --text: #eef1f7;
+      --muted: #8d96ab;
+      --key: #262c3a;
+      --key-hover: #2f3647;
+      --op: #28365e;
+      --op-text: #9db8ff;
+      --accent: #4f7cff;
+      --accent-text: #ffffff;
+      --danger: #ff7070;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 380px;
+    background: var(--panel);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .title { font-size: 14px; color: var(--muted); font-weight: 600; letter-spacing: .5px; }
+  .tools { display: flex; gap: 6px; }
+  .tool {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .tool:hover { background: var(--key); color: var(--text); }
+  .display {
+    background: var(--key);
+    border-radius: 16px;
+    padding: 14px 16px;
+    min-height: 112px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .expr {
+    font-size: 28px;
+    width: 100%;
+    text-align: right;
+    word-break: break-all;
+    min-height: 36px;
+    line-height: 1.25;
+  }
+  .expr.small { font-size: 20px; }
+  .expr.tiny { font-size: 16px; }
+  .preview {
+    font-size: 18px;
+    color: var(--muted);
+    min-height: 24px;
+    margin-top: 4px;
+    text-align: right;
+    word-break: break-all;
+  }
+  .preview.error { color: var(--danger); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .key {
+    border: 0;
+    background: var(--key);
+    color: var(--text);
+    font-size: 22px;
+    height: 58px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform .06s, background .15s;
+  }
+  .key:hover { background: var(--key-hover); }
+  .key:active { transform: scale(.95); }
+  .key.op { background: var(--op); color: var(--op-text); font-weight: 600; }
+  .key.op:hover { filter: brightness(.96); }
+  .key.eq { background: var(--accent); color: var(--accent-text); font-weight: 700; }
+  .key.eq:hover { filter: brightness(1.08); }
+  .key.clear { color: var(--danger); font-weight: 600; }
+  .key.zero { grid-column: span 2; }
+  .toast {
+    height: 18px;
+    margin-top: 10px;
+    font-size: 12px;
+    text-align: center;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .toast.show { opacity: 1; }
+  .history {
+    margin-top: 6px;
+    border-top: 1px solid var(--key);
+    padding-top: 10px;
+    display: none;
+  }
+  .history.open { display: block; }
+  .history-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .history-list {
+    max-height: 160px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .h-item {
+    text-align: right;
+    background: transparent;
+    border: 0;
+    color: var(--text);
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .h-item:hover { background: var(--key); }
+  .h-item .e { display: block; font-size: 12px; color: var(--muted); word-break: break-all; }
+  .h-item .r { display: block; font-size: 17px; word-break: break-all; }
+  .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 0; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">計算機</div>
+      <div class="tools">
+        <button class="tool" id="btnCopy" type="button">複製結果</button>
+        <button class="tool" id="btnHistory" type="button">歷史紀錄</button>
+      </div>
+    </div>
+
+    <div class="display">
+      <div class="expr" id="expr">0</div>
+      <div class="preview" id="preview"></div>
+    </div>
+
+    <div class="grid" id="keys">
+      <button class="key clear" data-act="clear" type="button">AC</button>
+      <button class="key op" data-act="paren" type="button">( )</button>
+      <button class="key op" data-in="%" type="button">%</button>
+      <button class="key op" data-in="÷" type="button">÷</button>
+
+      <button class="key" data-in="7" type="button">7</button>
+      <button class="key" data-in="8" type="button">8</button>
+      <button class="key" data-in="9" type="button">9</button>
+      <button class="key op" data-in="×" type="button">×</button>
+
+      <button class="key" data-in="4" type="button">4</button>
+      <button class="key" data-in="5" type="button">5</button>
+      <button class="key" data-in="6" type="button">6</button>
+      <button class="key op" data-in="−" type="button">−</button>
+
+      <button class="key" data-in="1" type="button">1</button>
+      <button class="key" data-in="2" type="button">2</button>
+      <button class="key" data-in="3" type="button">3</button>
+      <button class="key op" data-in="+" type="button">+</button>
+
+      <button class="key" data-act="sign" type="button">±</button>
+      <button class="key" data-in="0" type="button">0</button>
+      <button class="key" data-in="." type="button">.</button>
+      <button class="key eq" data-act="equal" type="button">=</button>
+
+      <button class="key zero" data-act="back" type="button" style="grid-column: span 4; height: 46px; font-size: 18px;">⌫ 刪除</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="history" id="history">
+      <div class="history-head">
+        <span>最近的計算</span>
+        <button class="tool" id="btnClearHistory" type="button">清除</button>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  var exprEl = document.getElementById("expr");
+  var previewEl = document.getElementById("preview");
+  var toastEl = document.getElementById("toast");
+  var
